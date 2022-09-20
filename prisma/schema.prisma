@@ -1,0 +1,509 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator nestgraphql {
+  provider                              = "node node_modules/prisma-nestjs-graphql"
+  output                                = "../src/@generated/prisma-nestjs-graphql"
+  noAtomicOperations                    = false
+  combineScalarFilters                  = false
+  reExport                              = None
+  emitSingle                            = false
+  emitCompiled                          = false
+  purgeOutput                           = false
+  requireSingleFieldsInWhereUniqueInput = false
+  fields_Validator_from                 = "class-validator"
+  fields_Validator_input                = true
+  fields_Scalars_from                   = "graphql-scalars"
+  fields_Scalars_input                  = true
+  useInputType_WhereInput_ALL           = "WhereInput"
+  decorate_1_type                       = "Create@(One|Many)UserArgs"
+  decorate_1_field                      = data
+  decorate_1_name                       = ValidateNested
+  decorate_1_from                       = "class-validator"
+  decorate_1_arguments                  = "[]"
+  decorate_2_type                       = "Create@(One|Many)UserArgs"
+  decorate_2_field                      = data
+  decorate_2_from                       = "class-transformer"
+  decorate_2_arguments                  = "['() => {propertyType.0}']"
+  decorate_2_name                       = Type
+  decorate_2_namedImport                = true
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum LANGUAGE {
+  ENGLISH
+  GERMANY
+  SPANISH
+  VIETNAMESE
+}
+
+enum UserType {
+  EXTERNAL
+  INTERNAL
+}
+
+enum Provider {
+  EMAIL
+  FACEBOOK
+  GOOGLE
+  APPLE
+}
+
+enum OSType {
+  ANDROID
+  IOS
+  OTHER
+}
+
+enum RoleType {
+  R
+  RW
+  RWD
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum NotificationType {
+  FEEDBACK
+}
+
+enum KeywordTriggerType {
+  DISEASE
+  SUPPLEMENT
+}
+
+model Role {
+  id                  String               @id @default(cuid()) @db.VarChar(30)
+  hidden              Boolean              @default(false)
+  isPreset            Boolean              @default(false)
+  name                String               @db.VarChar(255)
+  userType            UserType?
+  createdAt           DateTime             @default(now())
+  systemCreatedBy     String               @db.VarChar(30)
+  createdBySystemUser SystemUser           @relation("roleCreatedBySystemUser", fields: [systemCreatedBy], references: [id])
+  updatedAt           DateTime             @default(now())
+  systemUpdatedBy     String               @db.VarChar(30)
+  updatedBySystemUser SystemUser           @relation("roleUpdatedBySystemUser", fields: [systemUpdatedBy], references: [id])
+  deletedAt           DateTime?
+  systemDeletedBy     String?              @db.VarChar(30)
+  deletedBySystemUser SystemUser?          @relation("roleDeletedBySystemUser", fields: [systemDeletedBy], references: [id])
+  systemUsers         SystemUser[]
+  roleSideNavigations RoleSideNavigation[]
+
+  @@map("roles")
+}
+
+model SystemUser {
+  id                                          String                     @id @default(cuid()) @db.VarChar(30)
+  roleId                                      String?                    @db.VarChar(30)
+  role                                        Role?                      @relation(fields: [roleId], references: [id])
+  userName                                    String?                    @db.VarChar(255)
+  email                                       String?                    @db.VarChar(255)
+  department                                  String?                    @db.VarChar(50)
+  photoUrl                                    String?
+  secretPhrase                                String?
+  systemCreatedBy                             String?                    @db.VarChar(30) // optional here because first system user has not creator
+  createdByInternalUser                       SystemUser?                @relation("createdByInternalUser", fields: [systemCreatedBy], references: [id])
+  createdAt                                   DateTime                   @default(now())
+  systemUpdatedBy                             String?                    @db.VarChar(30) // optional here because first system user has not creator
+  updatedByInternalUser                       SystemUser?                @relation("updatedByInternalUser", fields: [systemUpdatedBy], references: [id])
+  updatedAt                                   DateTime                   @default(now())
+  systemDeletedBy                             String?                    @db.VarChar(30) // optional here because first system user has not creator
+  deletedByInternalUser                       SystemUser?                @relation("deletedByInternalUser", fields: [systemDeletedBy], references: [id])
+  deletedAt                                   DateTime?
+  hidden                                      Boolean                    @default(false)
+  roleSideNavigationCreatedBySystemUser       RoleSideNavigation[]       @relation("roleSideNavigationCreatedBySystemUser")
+  createdInternalUsers                        SystemUser[]               @relation("createdByInternalUser")
+  updatedInternalUsers                        SystemUser[]               @relation("updatedByInternalUser")
+  deletedByInternalUsers                      SystemUser[]               @relation("deletedByInternalUser")
+  rolesCreatedBySystemUser                    Role[]                     @relation("roleCreatedBySystemUser")
+  rolesUpdatedBySystemUser                    Role[]                     @relation("roleUpdatedBySystemUser")
+  rolesDeletedBySystemUser                    Role[]                     @relation("roleDeletedBySystemUser")
+  sideNavigationsUpdatedBySystemUser          SideNavigation[]           @relation("sideNavigationUpdatedBySystemUser")
+  sideNavigationsCreatedBySystemUser          SideNavigation[]           @relation("sideNavigationCreatedBySystemUser")
+  sideNavigationsDeletedBySystemUser          SideNavigation[]           @relation("sideNavigationDeletedBySystemUser")
+  systemNotifications                         SystemNotification[]       @relation("systemNotifications")
+  webDevices                                  SystemUserDevice[]         @relation("systemUserDevices")
+  userType                                    UserType
+  productCreatedBySystemUser                  Product[]                  @relation("productCreatedBy")
+  productUpdatedBySystemUser                  Product[]                  @relation("productUpdatedBy")
+  productDeletedBySytemUser                   Product[]                  @relation("productDeletedBy")
+  usefulInformationCreatedBySystemUser        UsefulInformation[]        @relation("usefulInformationCreatedBy")
+  usefulInformationUpdatedBySystemUser        UsefulInformation[]        @relation("usefulInformationUpdatedBy")
+  usefulInformationDeletedBySytemUser         UsefulInformation[]        @relation("usefulInformationDeletedBy")
+  usefulInformationImageCreatedBySystemUser   UsefulInformationImage[]   @relation("usefulInformationImageCreatedBy")
+  usefulInformationImageUpdatedBySystemUser   UsefulInformationImage[]   @relation("usefulInformationImageUpdatedBy")
+  usefulInformationImageDeletedBySytemUser    UsefulInformationImage[]   @relation("usefulInformationImageDeletedBy")
+  bookCreatedBySystemUser                     Book[]                     @relation("bookCreatedBy")
+  bookUpdatedBySystemUser                     Book[]                     @relation("bookUpdatedBy")
+  bookDeletedBySytemUser                      Book[]                     @relation("bookDeletedBy")
+  usefulInformationAffLinkCreatedBySystemUser UsefulInformationAffLink[] @relation("usefulInformationAffLinkCreatedBy")
+  usefulInformationAffLinkUpdatedBySystemUser UsefulInformationAffLink[] @relation("usefulInformationAffLinkUpdatedBy")
+  usefulInformationAffLinkDeletedBySytemUser  UsefulInformationAffLink[] @relation("usefulInformationAffLinkDeletedBy")
+  groupCreatedBySystemUser                    Group[]                    @relation("groupCreatedBy")
+  groupUpdatedBySystemUser                    Group[]                    @relation("groupUpdatedBy")
+  groupDeletedBySytemUser                     Group[]                    @relation("groupDeletedBy")
+  storeCreatedBySystemUser                    Store[]                    @relation("storeCreatedBy")
+  storeUpdatedBySystemUser                    Store[]                    @relation("storeUpdatedBy")
+  storeDeletedBySytemUser                     Store[]                    @relation("storeDeletedBy")
+  keywordCreatedBySystemUser                  Keyword[]                  @relation("keywordCreatedBy")
+  keywordUpdatedBySystemUser                  Keyword[]                  @relation("keywordUpdatedBy")
+  keywordDeletedBySytemUser                   Keyword[]                  @relation("keywordDeletedBy")
+  keywordGroupCreatedBySystemUser             KeywordGroup[]             @relation("keywordGroupCreatedBy")
+  keywordGroupUpdatedBySystemUser             KeywordGroup[]             @relation("keywordGroupUpdatedBy")
+  keywordGroupDeletedBySytemUser              KeywordGroup[]             @relation("keywordGroupDeletedBy")
+  promotingMarketingCreatedBySystemUser       PromoteMarketing[]         @relation("promotingMarketingCreatedBy")
+  promotingMarketingUpdatedBySystemUser       PromoteMarketing[]         @relation("promotingMarketingUpdatedBy")
+  promotingMarketingDeletedBySytemUser        PromoteMarketing[]         @relation("promotingMarketingDeletedBy")
+  counterPerGroupCreatedBySystemUser          CounterPerGroup[]          @relation("counterPerGroupCreatedBy")
+  counterProductPerGroup                      CounterProductPerGroup[]   @relation("counterProductPerGroupCreatedBy")
+  bannedKeywordCreatedBySystemUser            BannedKeyWord[]            @relation("bannedKeywordCreatedBy")
+  bannedKeywordUpdatedBySystemUser            BannedKeyWord[]            @relation("bannedKeywordUpdatedBy")
+  bannedKeywordDeletedBySytemUser             BannedKeyWord[]            @relation("bannedKeywordDeletedBy")
+
+  @@unique([userName, userType])
+  @@map("system_users")
+}
+
+model RoleSideNavigation {
+  id                  String         @id @default(cuid()) @db.VarChar(30)
+  sideNavigationId    String         @db.VarChar(30)
+  sideNavigation      SideNavigation @relation(fields: [sideNavigationId], references: [id])
+  roleId              String         @db.VarChar(30)
+  role                Role           @relation(fields: [roleId], references: [id])
+  roleType            RoleType
+  createdAt           DateTime       @default(now())
+  systemCreatedBy     String         @db.VarChar(30)
+  createdBySystemUser SystemUser     @relation("roleSideNavigationCreatedBySystemUser", fields: [systemCreatedBy], references: [id])
+
+  @@map("role_side_navigations")
+}
+
+model SideNavigation {
+  id                  String               @id @default(cuid()) @db.VarChar(30)
+  name                String               @db.VarChar(255)
+  userType            UserType
+  icon                String?              @db.VarChar(50)
+  order               Int                  @db.Integer
+  route               String
+  parentId            String?              @db.VarChar(30)
+  parent              SideNavigation?      @relation("sideNavigationToSideNavigation", fields: [parentId], references: [id])
+  updatedAt           DateTime             @default(now())
+  systemUpdatedBy     String               @db.VarChar(30)
+  updatedBySystemUser SystemUser           @relation("sideNavigationUpdatedBySystemUser", fields: [systemUpdatedBy], references: [id])
+  createdAt           DateTime             @default(now())
+  systemCreatedBy     String               @db.VarChar(30)
+  createdBySystemUser SystemUser           @relation("sideNavigationCreatedBySystemUser", fields: [systemCreatedBy], references: [id])
+  deletedAt           DateTime?
+  systemDeletedBy     String?              @db.VarChar(30)
+  deletedBySystemUser SystemUser?          @relation("sideNavigationDeletedBySystemUser", fields: [systemDeletedBy], references: [id])
+  sideNavigations     SideNavigation[]     @relation("sideNavigationToSideNavigation")
+  roleSideNavigations RoleSideNavigation[]
+
+  @@map("side_navigations")
+}
+
+model SystemUserDevice {
+  id                        String     @id @default(cuid()) @db.VarChar(30)
+  systemUserId              String     @unique @db.VarChar(30)
+  systemUser                SystemUser @relation("systemUserDevices", fields: [systemUserId], references: [id])
+  webDeviceFirebaseToken    String     @default("") @db.VarChar(255)
+  mobileDeviceFirebaseToken String     @default("") @db.VarChar(255)
+  createdAt                 DateTime   @default(now())
+
+  @@map("system_user_device")
+}
+
+model SystemNotification {
+  id             String           @id @default(cuid()) @db.VarChar(30)
+  systemUserId   String           @db.VarChar(30)
+  systemUser     SystemUser       @relation("systemNotifications", fields: [systemUserId], references: [id])
+  titleKey       String           @db.VarChar(200)
+  contentKey     String
+  type           NotificationType
+  readAt         DateTime?
+  additionalInfo Json?
+  createdAt      DateTime         @default(now())
+
+  @@map("systemuser_notifications")
+}
+
+model Product {
+  id                     String                   @id @default(cuid()) @db.VarChar(30)
+  createdAt              DateTime                 @default(now())
+  createdBySystemUserId  String                   @default("cl3mp14df00210zmigu9x8o7p") @db.VarChar(30)
+  createdBySystemUser    SystemUser               @relation("productCreatedBy", fields: [createdBySystemUserId], references: [id])
+  updatedAt              DateTime                 @default(now())
+  updatedBySystemUserId  String?                  @db.VarChar(30)
+  updatedBySystemUser    SystemUser?              @relation("productUpdatedBy", fields: [updatedBySystemUserId], references: [id])
+  deletedAt              DateTime?
+  deletedBySystemUserId  String?                  @db.VarChar(30)
+  deletedBySystemUser    SystemUser?              @relation("productDeletedBy", fields: [deletedBySystemUserId], references: [id])
+  title                  String
+  image                  String
+  text                   String
+  link                   String
+  voucher                String?
+  productGroup           ProductGroup[]
+  counterProductPerGroup CounterProductPerGroup[]
+  language               LANGUAGE?                @default(GERMANY)
+  @@map("product")
+}
+
+model CounterProductPerGroup {
+  id                    String     @id @default(cuid()) @db.VarChar(30)
+  createdAt             DateTime   @default(now())
+  createdBySystemUserId String     @default("cl3mp14df00210zmigu9x8o7p") @db.VarChar(30)
+  createdBySystemUser   SystemUser @relation("counterProductPerGroupCreatedBy", fields: [createdBySystemUserId], references: [id])
+  counter               Int        @default(0)
+  groupId               String     @db.VarChar(30)
+  group                 Group      @relation(fields: [groupId], references: [id])
+  productId             String     @db.VarChar(30)
+  product               Product    @relation(fields: [productId], references: [id])
+  @@map("counter_product_per_group")
+}
+
+model ProductGroup {
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  productId String   @db.VarChar(30)
+  product   Product  @relation(fields: [productId], references: [id])
+  groupId   String   @db.VarChar(30)
+  group     Group    @relation(fields: [groupId], references: [id])
+  createdAt DateTime @default(now())
+  @@map("product_group")
+}
+
+model UsefulInformationGroup {
+  id                  String            @id @default(cuid()) @db.VarChar(30)
+  usefulInformationId String            @db.VarChar(30)
+  usefulInformation   UsefulInformation @relation(fields: [usefulInformationId], references: [id])
+  groupId             String            @db.VarChar(30)
+  group               Group             @relation(fields: [groupId], references: [id])
+  createdAt           DateTime          @default(now())
+  @@map("useful_information_group")
+}
+
+model UsefulInformation {
+  id                       String                    @id @default(cuid()) @db.VarChar(30)
+  createdAt                DateTime                  @default(now())
+  createdBySystemUserId    String                    @default("cl3mp14df00210zmigu9x8o7p") @db.VarChar(30)
+  createdBySystemUser      SystemUser                @relation("usefulInformationCreatedBy", fields: [createdBySystemUserId], references: [id])
+  updatedAt                DateTime                  @default(now())
+  updatedBySystemUserId    String?                   @db.VarChar(30)
+  updatedBySystemUser      SystemUser?               @relation("usefulInformationUpdatedBy", fields: [updatedBySystemUserId], references: [id])
+  deletedAt                DateTime?
+  deletedBySystemUserId    String?                   @db.VarChar(30)
+  deletedBySystemUser      SystemUser?               @relation("usefulInformationDeletedBy", fields: [deletedBySystemUserId], references: [id])
+  name                     String?
+  usefulInformationImageId String?                   @db.VarChar(30)
+  img                      UsefulInformationImage?   @relation(fields: [usefulInformationImageId], references: [id])
+  quelleId                 String?
+  quelle                   Book?                     @relation(fields: [quelleId], references: [id])
+  afflinksId               String?
+  afflinks                 UsefulInformationAffLink? @relation(fields: [afflinksId], references: [id])
+  counter                  Int                       @default(0)
+  seite                    Int?
+  text                     String?
+  counterPerGroup          CounterPerGroup[]
+  usefulInformationGroup   UsefulInformationGroup[]
+  language              LANGUAGE            @default(GERMANY)
+
+  @@map("useful_information")
+}
+
+model UsefulInformationImage {
+  id                    String              @id @default(cuid()) @db.VarChar(30)
+  createdAt             DateTime            @default(now())
+  createdBySystemUserId String              @default("cl3mp14df00210zmigu9x8o7p") @db.VarChar(30)
+  createdBySystemUser   SystemUser          @relation("usefulInformationImageCreatedBy", fields: [createdBySystemUserId], references: [id])
+  updatedAt             DateTime            @default(now())
+  updatedBySystemUserId String?             @db.VarChar(30)
+  updatedBySystemUser   SystemUser?         @relation("usefulInformationImageUpdatedBy", fields: [updatedBySystemUserId], references: [id])
+  deletedAt             DateTime?
+  deletedBySystemUserId String?             @db.VarChar(30)
+  deletedBySystemUser   SystemUser?         @relation("usefulInformationImageDeletedBy", fields: [deletedBySystemUserId], references: [id])
+  usefulInformation     UsefulInformation[]
+  name                  String?
+  image                 String[]
+
+  @@map("useful_information_image")
+}
+
+model Book {
+  id                    String              @id @default(cuid()) @db.VarChar(30)
+  title                 String?
+  link                  String?
+  weiter                Int?
+  voucher               String?
+  createdAt             DateTime            @default(now())
+  createdBySystemUserId String              @default("cl3mp14df00210zmigu9x8o7p") @db.VarChar(30)
+  createdBySystemUser   SystemUser          @relation("bookCreatedBy", fields: [createdBySystemUserId], references: [id])
+  updatedAt             DateTime            @default(now())
+  updatedBySystemUserId String?             @db.VarChar(30)
+  updatedBySystemUser   SystemUser?         @relation("bookUpdatedBy", fields: [updatedBySystemUserId], references: [id])
+  deletedAt             DateTime?
+  deletedBySystemUserId String?             @db.VarChar(30)
+  deletedBySystemUser   SystemUser?         @relation("bookDeletedBy", fields: [deletedBySystemUserId], references: [id])
+  usefulInformation     UsefulInformation[]
+
+  @@map("book")
+}
+
+model UsefulInformationAffLink {
+  id                    String              @id @default(cuid()) @db.VarChar(30)
+  createdAt             DateTime            @default(now())
+  createdBySystemUserId String              @default("cl3mp14df00210zmigu9x8o7p") @db.VarChar(30)
+  createdBySystemUser   SystemUser          @relation("usefulInformationAffLinkCreatedBy", fields: [createdBySystemUserId], references: [id])
+  updatedAt             DateTime            @default(now())
+  updatedBySystemUserId String?             @db.VarChar(30)
+  updatedBySystemUser   SystemUser?         @relation("usefulInformationAffLinkUpdatedBy", fields: [updatedBySystemUserId], references: [id])
+  deletedAt             DateTime?
+  deletedBySystemUserId String?             @db.VarChar(30)
+  deletedBySystemUser   SystemUser?         @relation("usefulInformationAffLinkDeletedBy", fields: [deletedBySystemUserId], references: [id])
+  html                  String
+  name                  String?
+  usefulInformation     UsefulInformation[]
+
+  @@map("useful_information_aff_link")
+}
+
+model Group {
+  id                     String                   @id @default(cuid()) @db.VarChar(30)
+  createdAt              DateTime                 @default(now())
+  createdBySystemUserId  String                   @default("cl3mp14df00210zmigu9x8o7p") @db.VarChar(30)
+  createdBySystemUser    SystemUser               @relation("groupCreatedBy", fields: [createdBySystemUserId], references: [id])
+  updatedAt              DateTime                 @default(now())
+  updatedBySystemUserId  String?                  @db.VarChar(30)
+  updatedBySystemUser    SystemUser?              @relation("groupUpdatedBy", fields: [updatedBySystemUserId], references: [id])
+  deletedAt              DateTime?
+  deletedBySystemUserId  String?                  @db.VarChar(30)
+  deletedBySystemUser    SystemUser?              @relation("groupDeletedBy", fields: [deletedBySystemUserId], references: [id])
+  name                   String?
+  groupId                String?
+  counterPerGroup        CounterPerGroup[]
+  productGroup           ProductGroup[]
+  usefulInformationGroup UsefulInformationGroup[]
+  counterProductPerGroup CounterProductPerGroup[]
+  language              LANGUAGE            @default(GERMANY)
+
+  @@map("group")
+}
+
+model CounterPerGroup {
+  id                    String            @id @default(cuid()) @db.VarChar(30)
+  createdAt             DateTime          @default(now())
+  createdBySystemUserId String            @default("cl3mp14df00210zmigu9x8o7p") @db.VarChar(30)
+  createdBySystemUser   SystemUser        @relation("counterPerGroupCreatedBy", fields: [createdBySystemUserId], references: [id])
+  counter               Int               @default(0)
+  groupId               String            @db.VarChar(30)
+  group                 Group             @relation(fields: [groupId], references: [id])
+  usefulInformationId   String            @db.VarChar(30)
+  usefulInformation     UsefulInformation @relation(fields: [usefulInformationId], references: [id])
+
+  @@map("counter_per_group")
+}
+
+model Store {
+  id                    String      @id @default(cuid()) @db.VarChar(30)
+  createdAt             DateTime    @default(now())
+  createdBySystemUserId String      @default("cl3mp14df00210zmigu9x8o7p") @db.VarChar(30)
+  createdBySystemUser   SystemUser  @relation("storeCreatedBy", fields: [createdBySystemUserId], references: [id])
+  updatedAt             DateTime    @default(now())
+  updatedBySystemUserId String?     @db.VarChar(30)
+  updatedBySystemUser   SystemUser? @relation("storeUpdatedBy", fields: [updatedBySystemUserId], references: [id])
+  deletedAt             DateTime?
+  deletedBySystemUserId String?     @db.VarChar(30)
+  deletedBySystemUser   SystemUser? @relation("storeDeletedBy", fields: [deletedBySystemUserId], references: [id])
+  name                  String?
+
+  @@map("store")
+}
+
+model KeywordGroup {
+  id                    String      @id @default(cuid()) @db.VarChar(30)
+  createdAt             DateTime    @default(now())
+  createdBySystemUserId String      @default("cl3mp14df00210zmigu9x8o7p") @db.VarChar(30)
+  createdBySystemUser   SystemUser  @relation("keywordGroupCreatedBy", fields: [createdBySystemUserId], references: [id])
+  updatedAt             DateTime    @default(now())
+  updatedBySystemUserId String?     @db.VarChar(30)
+  updatedBySystemUser   SystemUser? @relation("keywordGroupUpdatedBy", fields: [updatedBySystemUserId], references: [id])
+  deletedAt             DateTime?
+  deletedBySystemUserId String?     @db.VarChar(30)
+  deletedBySystemUser   SystemUser? @relation("keywordGroupDeletedBy", fields: [deletedBySystemUserId], references: [id])
+  keywords              Keyword[]
+  name                  String?
+  image                 String?
+  html                  String?
+  additional           Json?
+  language              LANGUAGE            @default(GERMANY)
+
+  @@map("keyword_group")
+}
+
+model Keyword {
+  id                    String              @id @default(cuid()) @db.VarChar(30)
+  createdAt             DateTime            @default(now())
+  createdBySystemUserId String              @default("cl3mp14df00210zmigu9x8o7p") @db.VarChar(30)
+  createdBySystemUser   SystemUser          @relation("keywordCreatedBy", fields: [createdBySystemUserId], references: [id])
+  updatedAt             DateTime            @default(now())
+  updatedBySystemUserId String?             @db.VarChar(30)
+  updatedBySystemUser   SystemUser?         @relation("keywordUpdatedBy", fields: [updatedBySystemUserId], references: [id])
+  deletedAt             DateTime?
+  deletedBySystemUserId String?             @db.VarChar(30)
+  deletedBySystemUser   SystemUser?         @relation("keywordDeletedBy", fields: [deletedBySystemUserId], references: [id])
+  keywordGroupId        String?
+  keywordGroup          KeywordGroup?       @relation(fields: [keywordGroupId], references: [id])
+  type                  KeywordTriggerType?
+  text                  String?
+  @@map("keyword")
+}
+
+model PromoteMarketing {
+  id                    String      @id @default(cuid()) @db.VarChar(30)
+  createdAt             DateTime    @default(now())
+  createdBySystemUserId String      @default("cl3mp14df00210zmigu9x8o7p") @db.VarChar(30)
+  createdBySystemUser   SystemUser  @relation("promotingMarketingCreatedBy", fields: [createdBySystemUserId], references: [id])
+  updatedAt             DateTime    @default(now())
+  updatedBySystemUserId String?     @db.VarChar(30)
+  updatedBySystemUser   SystemUser? @relation("promotingMarketingUpdatedBy", fields: [updatedBySystemUserId], references: [id])
+  deletedAt             DateTime?
+  deletedBySystemUserId String?     @db.VarChar(30)
+  deletedBySystemUser   SystemUser? @relation("promotingMarketingDeletedBy", fields: [deletedBySystemUserId], references: [id])
+  image                 String?
+  html                  String?
+  language              LANGUAGE    @default(GERMANY)
+
+  @@map("promote_marketing")
+}
+
+model BannedKeyWord {
+  id                    String      @id @default(cuid()) @db.VarChar(30)
+  createdAt             DateTime    @default(now())
+  createdBySystemUserId String      @default("cl3mp14df00210zmigu9x8o7p") @db.VarChar(30)
+  createdBySystemUser   SystemUser  @relation("bannedKeywordCreatedBy", fields: [createdBySystemUserId], references: [id])
+  updatedAt             DateTime    @default(now())
+  updatedBySystemUserId String?     @db.VarChar(30)
+  updatedBySystemUser   SystemUser? @relation("bannedKeywordUpdatedBy", fields: [updatedBySystemUserId], references: [id])
+  deletedAt             DateTime?
+  deletedBySystemUserId String?     @db.VarChar(30)
+  deletedBySystemUser   SystemUser? @relation("bannedKeywordDeletedBy", fields: [deletedBySystemUserId], references: [id])
+  text                  String?
+  @@map("banned_keyword")
+}
