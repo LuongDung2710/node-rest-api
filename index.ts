@@ -282,6 +282,24 @@ app.post('/send-html', async function (req: Request, res: Response) {
     }
 });
 
+app.post('/create-group', async function (req: Request, res: Response) {
+    const body = req.body;
+    try {
+        console.log("This is group create request body: ", req.body);
+        const g = await prisma.group.create({
+            data: {
+                id: body.id,
+                groupId: body.groupId,
+                name: body.name,
+                language: body.language
+            }
+        });
+        res.json({data: g});
+    } catch (error) {
+        res.send(error)
+    }
+});
+
 app.listen(PORT, async function () {
     console.log("Server is started at ", BASE_URL);
 });
