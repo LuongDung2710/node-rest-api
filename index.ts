@@ -1,7 +1,7 @@
 import { Telegraf } from 'telegraf';
 import express, { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { replace } from 'lodash';
+import { replace, sample } from 'lodash';
 require('dotenv').config();
 const app = express();
 const prisma = new PrismaClient()
@@ -19,7 +19,24 @@ app.post('/create-useful-information', async function (req: Request, res: Respon
     const body = req.body;
     try {
         console.log("This is useful information create request body: ", req.body);
-        const groupIdDatas = body.groupIds.map((groupId: string) => ({groupId}));
+        const groupIdDatas = body.groupIds.map((groupId: string) => ({ groupId }));
+
+        const afflink = await prisma.usefulInformationAffLink.findUnique({
+            where: { id: body.afflinksId }
+        });
+        let image;
+        if (body.usefulInformationImageId) {
+            image = await prisma.usefulInformationImage.findUnique({
+                where: { id: body.usefulInformationImageId }
+            });
+        }
+
+        if (image && image.image.length !== 0) {
+            await bot.telegram.sendPhoto("-694015973", sample(image!.image), { parse_mode: "HTML", caption: body.text });
+        } 
+        if (afflink) {
+            await bot.telegram.sendMessage("-694015973", afflink!.html, { parse_mode: "HTML" })
+        }
 
         const u = await prisma.usefulInformation.create({
             data: {
@@ -39,7 +56,8 @@ app.post('/create-useful-information', async function (req: Request, res: Respon
                 counterPerGroup: true
             }
         });
-        res.json({ data: u});
+
+        res.json({ data: u });
     } catch (error) {
         console.log(error);
         res.json(error)
@@ -87,9 +105,13 @@ app.post('/create-product', async function (req: Request, res: Response) {
     const body = req.body;
     try {
         console.log("This is product create request body: ", req.body);
-        await bot.telegram.sendMessage("-694015973", body.text, { parse_mode: "HTML" });
+        if (body.image) {
+            await bot.telegram.sendPhoto("-694015973", body.image, { parse_mode: "HTML", caption: body.text });
+        } else {
+            await bot.telegram.sendMessage("-694015973", body.text, { parse_mode: "HTML" });
+        }
 
-        const groupIdDatas = body.groupIds.map((groupId: string) => ({groupId}));
+        const groupIdDatas = body.groupIds.map((groupId: string) => ({ groupId }));
 
         const p = await prisma.product.create({
             data: {
@@ -143,7 +165,7 @@ app.post('/create-keyword', async function (req: Request, res: Response) {
             }
         });
 
-        res.json({data: k});
+        res.json({ data: k });
     } catch (error) {
         res.send(error)
     }
@@ -247,10 +269,10 @@ app.post('/clean-html', async function (req: Request, res: Response) {
         html = replace(html, new RegExp('&reg;', 'g'), "®");
         html = replace(html, new RegExp('&#167;', 'g'), "§");
         html = replace(html, new RegExp('&#182;', 'g'), "¶");
-        res.json({data: {html}});
+        res.json({ data: { html } });
     } catch (error) {
         console.log(error);
-        
+
         res.send(error)
     }
 });
@@ -276,7 +298,7 @@ app.post('/send-html', async function (req: Request, res: Response) {
                 caption: body.html
             });
         }
-        res.json({data: 'ok'});
+        res.json({ data: 'ok' });
     } catch (error) {
         res.send(error)
     }
@@ -294,7 +316,7 @@ app.post('/create-group', async function (req: Request, res: Response) {
                 language: body.language
             }
         });
-        res.json({data: g});
+        res.json({ data: g });
     } catch (error) {
         res.send(error)
     }
