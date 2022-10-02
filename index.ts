@@ -159,7 +159,7 @@ app.post('/clean-html', async function (req: Request, res: Response) {
         html = replace(html, new RegExp('<br />', 'g'), "\n");
         html = replace(html, new RegExp('<ul>', 'g'), "");
         html = replace(html, new RegExp('</ul>', 'g'), "\n");
-        html = replace(html, new RegExp('<li>', 'g'), "- ");
+        html = replace(html, new RegExp('<li>', 'g'), " • ");
         html = replace(html, new RegExp('</li>', 'g'), "\n");
         html = replace(html, new RegExp('<div>', 'g'), "");
         html = replace(html, new RegExp('</div>', 'g'), "\n");
