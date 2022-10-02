@@ -2,6 +2,7 @@ import { Telegraf } from 'telegraf';
 import express, { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { replace } from 'lodash';
+require('dotenv').config();
 const app = express();
 const prisma = new PrismaClient()
 const PORT = process.env.PORT || 3001;
@@ -11,6 +12,8 @@ const bot = new Telegraf("5377807406:AAF2g-bvh7w0oSL-IPalVm5MsI9hfXOeL58");
 app.get('/idle', function (_, res) {
     res.send('Hello World')
 });
+
+console.log(BASE_URL);
 
 app.post('/create-useful-information', async function (req: Request, res: Response) {
     const body = req.body;
