@@ -108,7 +108,11 @@ app.post('/create-product', async function (req: Request, res: Response) {
         if (body.image) {
             await bot.telegram.sendPhoto("-694015973", body.image, { parse_mode: "HTML", caption: body.text });
         } else {
-            await bot.telegram.sendMessage("-694015973", body.text, { parse_mode: "HTML" });
+            await bot.telegram.sendMessage("-694015973", body.text, { parse_mode: "HTML", disable_web_page_preview: true });
+        }
+
+        if (body.optionText) {
+            await bot.telegram.sendMessage("-694015973", body.optionText, { parse_mode: "HTML", disable_web_page_preview: true });
         }
 
         const groupIdDatas = body.groupIds.map((groupId: string) => ({ groupId }));
@@ -119,6 +123,7 @@ app.post('/create-product', async function (req: Request, res: Response) {
                 image: body.image,
                 link: body.link,
                 text: body.text,
+                optionText: body.optionText,
                 language: body.language,
                 counterProductPerGroup: {
                     createMany: {

@@ -259,11 +259,13 @@ model Product {
   title                  String
   image                  String
   text                   String
+  optionText             String?
   link                   String
   voucher                String?
   productGroup           ProductGroup[]
   counterProductPerGroup CounterProductPerGroup[]
   language               LANGUAGE?                @default(GERMANY)
+
   @@map("product")
 }
 
@@ -277,6 +279,7 @@ model CounterProductPerGroup {
   group                 Group      @relation(fields: [groupId], references: [id])
   productId             String     @db.VarChar(30)
   product               Product    @relation(fields: [productId], references: [id])
+
   @@map("counter_product_per_group")
 }
 
@@ -287,6 +290,7 @@ model ProductGroup {
   groupId   String   @db.VarChar(30)
   group     Group    @relation(fields: [groupId], references: [id])
   createdAt DateTime @default(now())
+
   @@map("product_group")
 }
 
@@ -297,6 +301,7 @@ model UsefulInformationGroup {
   groupId             String            @db.VarChar(30)
   group               Group             @relation(fields: [groupId], references: [id])
   createdAt           DateTime          @default(now())
+
   @@map("useful_information_group")
 }
 
@@ -323,7 +328,7 @@ model UsefulInformation {
   text                     String?
   counterPerGroup          CounterPerGroup[]
   usefulInformationGroup   UsefulInformationGroup[]
-  language              LANGUAGE            @default(GERMANY)
+  language                 LANGUAGE                  @default(GERMANY)
 
   @@map("useful_information")
 }
@@ -401,7 +406,7 @@ model Group {
   productGroup           ProductGroup[]
   usefulInformationGroup UsefulInformationGroup[]
   counterProductPerGroup CounterProductPerGroup[]
-  language              LANGUAGE            @default(GERMANY)
+  language               LANGUAGE                 @default(GERMANY)
 
   @@map("group")
 }
@@ -451,8 +456,8 @@ model KeywordGroup {
   name                  String?
   image                 String?
   html                  String?
-  additional           Json?
-  language              LANGUAGE            @default(GERMANY)
+  additional            Json?
+  language              LANGUAGE    @default(GERMANY)
 
   @@map("keyword_group")
 }
@@ -472,6 +477,7 @@ model Keyword {
   keywordGroup          KeywordGroup?       @relation(fields: [keywordGroupId], references: [id])
   type                  KeywordTriggerType?
   text                  String?
+
   @@map("keyword")
 }
 
@@ -505,5 +511,6 @@ model BannedKeyWord {
   deletedBySystemUserId String?     @db.VarChar(30)
   deletedBySystemUser   SystemUser? @relation("bannedKeywordDeletedBy", fields: [deletedBySystemUserId], references: [id])
   text                  String?
+
   @@map("banned_keyword")
 }
