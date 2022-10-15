@@ -333,6 +333,26 @@ app.post('/create-group', async function (req: Request, res: Response) {
     }
 });
 
+
+app.post('/create-book', async function (req: Request, res: Response) {
+    const body = req.body;
+    try {
+        console.log("This is book create request body: ", req.body);
+        const g = await prisma.book.create({
+            data: {
+                title: body.title,
+                link: body.link,
+                weiter: body.weiter, 
+                voucher: body.voucher, 
+            }
+        });
+        res.json({ data: g });
+    } catch (error) {
+        res.send(error)
+    }
+});
+
+
 app.listen(PORT, async function () {
     console.log("Server is started at ", BASE_URL);
 });
