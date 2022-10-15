@@ -31,6 +31,11 @@ app.post('/create-useful-information', async function (req: Request, res: Respon
             });
         }
 
+        if (body.text.length > 950) {
+            throw new Error("Your text is bigger than 950")
+        }
+
+
         if (image && image.image.length !== 0) {
             await bot.telegram.sendPhoto("-694015973", sample(image!.image), { parse_mode: "HTML", caption: body.text });
         } 
