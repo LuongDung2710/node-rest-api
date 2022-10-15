@@ -32,7 +32,7 @@ app.post('/create-useful-information', async function (req: Request, res: Respon
         }
 
         if (body.text.length > 950) {
-            throw new Error("Your text is bigger than 950")
+            res.json({ data: {error: 'Your text is longer than 950'} });
         }
 
 
